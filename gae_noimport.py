@@ -37,7 +37,7 @@
 import sys
 import os
 from os import path
-from time import sleep, time
+from time import time
 from tempfile import mkdtemp
 from subprocess import Popen, PIPE
 from urllib import urlopen
@@ -63,7 +63,6 @@ def fetch(modules):
             output = urlopen('http://localhost:%d/' % PORT).read()
             return output
         finally:
-            print "KILLING SERVER"
             os.kill(server_proc.pid, SIGKILL)
     finally:
         rmtree(appdir)

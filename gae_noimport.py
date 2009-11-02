@@ -37,7 +37,6 @@
 import sys
 import os
 from os import path
-from time import time
 from tempfile import mkdtemp
 from subprocess import Popen, PIPE
 from urllib import urlopen
@@ -100,26 +99,24 @@ def makeapp(modules):
         
     return appdir
 
-def runserver(port, appdir, timeout=30):
+def runserver(port, appdir):
     """ Runs the dev_appserver.py script from the GAE SDK with the specified
     port and application directory and returns a Popen object, after blocking
     until the server has printed a message indicating the server is fully
-    up and running. Raises OSError if this is not done within the timeout. """
+    up and running. """
     
-    start_time = time()
     server_proc = Popen(['dev_appserver.py', '-p', str(port), appdir], stderr=PIPE)
     started = False
-    while time() < start_time + timeout:
+    
+    # TODO: Working non-blocking I/O and timeout
+    # Deadlocking is a known issue with the subprocess module (Popen)
+    # http://www.python.org/dev/peps/pep-3145/
+    
+    while 1:
         line = server_proc.stderr.readline()
-        if not line:
+        if "Running application" in line:
             break
-        elif "Running application" in line:
-            started = True
-            break
-    if not started:
-        if server_proc.pid:
-            os.kill(server_proc.pid, SIGKILL)
-        raise OSError("Could not start de_appserver.py successfully")
+
     return server_proc
     
 #----------------------------------------------------------------------------#
